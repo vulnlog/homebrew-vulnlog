@@ -1,0 +1,38 @@
+name: Continuous Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  test-vl-yaml:
+    name: Test Homebrew Installation on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install vl-yaml
+        run: brew install vulnlog/vulnlog/vl-yaml
+
+      - name: Verify vl-yaml installation
+        run: |
+          which vl-yaml
+          vl-yaml --help
+
+      - name: Create minimal test file
+        run: |
+          cat > test-file.yml << 'EOF'
+          ---
+          vulnlog:
+            version: 1.0.0
+            vendor: Minimal Corp
+            product: Minimal Product
+          EOF
+
+      - name: Run vl-yaml with minimal test file
+        run: vl-yaml test-file.yml
