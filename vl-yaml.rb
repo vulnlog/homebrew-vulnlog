@@ -4,7 +4,7 @@ class VlYaml < Formula
   license "GPL-3.0"
 
   url "https://github.com/vulnlog/vulnlog-poc/releases/download/v0.4.1/vl-yaml-macos-arm64"
-  sha256 "2ec19ae64423aaf564bae6f99e0d6271ee959177f34d87e28db4709de41cdfdf"
+  sha256 "be45bacecbed608539987fd4d829ddfb28a1f1bc296d72c1205ebbbd25c42253"
   version "0.4.1"
 
   def install
