@@ -22,7 +22,7 @@ jobs:
       - name: Verify vl-yaml installation
         run: |
           which vl-yaml
-          vl-yaml --help
+          vl-yaml --version
 
       - name: Create minimal test file
         run: |
