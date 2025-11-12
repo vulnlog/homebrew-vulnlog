@@ -3,9 +3,9 @@ class VlYaml < Formula
   homepage "https://github.com/vulnlog/vulnlog-poc"
   license "GPL-3.0"
 
-  url "https://github.com/vulnlog/vulnlog-poc/releases/download/v0.4.1/vl-yaml-macos-arm64"
-  sha256 "be45bacecbed608539987fd4d829ddfb28a1f1bc296d72c1205ebbbd25c42253"
-  version "0.4.1"
+  url "https://github.com/vulnlog/vulnlog-poc/releases/download/v0.5.0/vl-yaml-macos-arm64"
+  sha256 "1228953e64858d54372cb63ccb628daf5f122f712da500eb079c41d466a5804a"
+  version "0.5.0"
 
   def install
     bin.install "vl-yaml-macos-arm64" => "vl-yaml"
