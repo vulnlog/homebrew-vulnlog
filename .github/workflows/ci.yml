@@ -28,10 +28,11 @@ jobs:
         run: |
           cat > test-file.yml << 'EOF'
           ---
-          vulnlog:
-            version: 1.0.0
+          version: vulnlog/v1
+          metadata:
             vendor: Minimal Corp
             product: Minimal Product
+            author: Minimal Team
           EOF
 
       - name: Run vl-yaml with minimal test file
