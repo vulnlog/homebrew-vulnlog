@@ -29,10 +29,9 @@ jobs:
           cat > test-file.yml << 'EOF'
           ---
           version: vulnlog/v1
-          metadata:
-            vendor: Minimal Corp
-            product: Minimal Product
-            author: Minimal Team
+
+          vulnerabilities:
+            - desc: Replace this text with your first vulnerability description.
           EOF
 
       - name: Run vl-yaml with minimal test file
