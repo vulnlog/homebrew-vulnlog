@@ -13,13 +13,10 @@ permissions:
 jobs:
   test-vulnlog:
     name: Test Homebrew installation
-    strategy:
-      fail-fast: false
-      matrix:
-        # macos-latest = Apple Silicon (arm64, native binary path)
-        # macos-13     = Intel (x86_64, JVM fallback path)
-        os: [macos-latest, macos-13]
-    runs-on: ${{ matrix.os }}
+    # GitHub-hosted free Intel macOS runners have been retired; all hosted
+    # macOS runners are Apple Silicon. The Intel JVM-fallback install path
+    # in vulnlog.rb is therefore not exercised by CI.
+    runs-on: macos-latest
     steps:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
