@@ -7,6 +7,8 @@ class VlYaml < Formula
   sha256 "457633ba75e9bf3b569fd4a1acedf2080922f3ef2228bc678b23a70957b0f2dd"
   version "0.6.0"
 
+  deprecate! date: "2026-05-28", because: "the vl-yaml PoC has been superseded by the `vulnlog` formula"
+
   def install
     bin.install "vl-yaml-macos-arm64" => "vl-yaml"
   end
