@@ -1,0 +1,119 @@
+name: Bump vulnlog formula
+
+on:
+  repository_dispatch:
+    types: [vulnlog-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Vulnlog version (without v prefix, e.g. 0.14.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: vars
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          VERSION="${DISPATCH_VERSION:-$INPUT_VERSION}"
+          if [ -z "$VERSION" ]; then
+            echo "No version supplied via dispatch payload or workflow input" >&2
+            exit 1
+          fi
+          # Strip a leading v if present.
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Compute SHA256s
+        id: sha
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          set -euo pipefail
+          ARM_URL="https://github.com/vulnlog/vulnlog/releases/download/v${VERSION}/vulnlog-macos-aarch64.zip"
+          JVM_URL="https://github.com/vulnlog/vulnlog/releases/download/v${VERSION}/vulnlog-${VERSION}.zip"
+          ARM_SHA=$(curl -fsSL "$ARM_URL" | sha256sum | awk '{print $1}')
+          JVM_SHA=$(curl -fsSL "$JVM_URL" | sha256sum | awk '{print $1}')
+          echo "arm_sha=$ARM_SHA" >> "$GITHUB_OUTPUT"
+          echo "jvm_sha=$JVM_SHA" >> "$GITHUB_OUTPUT"
+          echo "arm_url=$ARM_URL" >> "$GITHUB_OUTPUT"
+          echo "jvm_url=$JVM_URL" >> "$GITHUB_OUTPUT"
+          echo "Apple Silicon SHA: $ARM_SHA"
+          echo "JVM SHA:           $JVM_SHA"
+
+      - name: Patch vulnlog.rb
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          ARM_SHA: ${{ steps.sha.outputs.arm_sha }}
+          JVM_SHA: ${{ steps.sha.outputs.jvm_sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          arm_sha = os.environ["ARM_SHA"]
+          jvm_sha = os.environ["JVM_SHA"]
+
+          path = Path("vulnlog.rb")
+          text = path.read_text()
+
+          base = "https://github.com/vulnlog/vulnlog/releases/download"
+          arm_url = f'{base}/v{version}/vulnlog-macos-aarch64.zip'
+          jvm_url = f'{base}/v{version}/vulnlog-{version}.zip'
+
+          # version line
+          text = re.sub(r'^(\s*version\s+)"[^"]+"',
+                        lambda m: f'{m.group(1)}"{version}"',
+                        text, count=1, flags=re.MULTILINE)
+
+          # arm url + sha (the url ending in vulnlog-macos-aarch64.zip)
+          text = re.sub(
+              r'(url\s+)"[^"]*vulnlog-macos-aarch64\.zip"\s*\n(\s*sha256\s+)"[0-9a-f]{64}"',
+              lambda m: f'{m.group(1)}"{arm_url}"\n{m.group(2)}"{arm_sha}"',
+              text, count=1)
+
+          # jvm url + sha (the url ending in vulnlog-<old-version>.zip; just match the generic shape)
+          text = re.sub(
+              r'(url\s+)"[^"]*vulnlog-\d[^"]*\.zip"\s*\n(\s*sha256\s+)"[0-9a-f]{64}"',
+              lambda m: f'{m.group(1)}"{jvm_url}"\n{m.group(2)}"{jvm_sha}"',
+              text, count=1)
+
+          path.write_text(text)
+          print(text)
+          PY
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bump-vulnlog-${{ steps.vars.outputs.version }}
+          base: main
+          commit-message: "Bump vulnlog to ${{ steps.vars.outputs.version }}"
+          title: "Bump vulnlog to ${{ steps.vars.outputs.version }}"
+          body: |
+            Automated bump triggered by release [v${{ steps.vars.outputs.version }}](https://github.com/vulnlog/vulnlog/releases/tag/v${{ steps.vars.outputs.version }}) in `vulnlog/vulnlog`.
+
+            ## Asset checksums
+
+            | Asset | SHA256 |
+            | --- | --- |
+            | [`vulnlog-macos-aarch64.zip`](${{ steps.sha.outputs.arm_url }}) | `${{ steps.sha.outputs.arm_sha }}` |
+            | [`vulnlog-${{ steps.vars.outputs.version }}.zip`](${{ steps.sha.outputs.jvm_url }}) | `${{ steps.sha.outputs.jvm_sha }}` |
+
+            CI will install the formula on both Apple Silicon and Intel macOS runners. Merge after CI is green.
+          delete-branch: true
