@@ -2,14 +2,14 @@ class Vulnlog < Formula
   desc "Supply chain security, as code: track SCA vulnerability findings"
   homepage "https://github.com/vulnlog/vulnlog"
   license "Apache-2.0"
-  version "0.15.1"
+  version "0.16.0"
 
   if Hardware::CPU.arm?
-    url "https://github.com/vulnlog/vulnlog/releases/download/v0.15.1/vulnlog-macos-aarch64.zip"
-    sha256 "1de342856a46a2404905f06ac51e2a309c4f95d9574ae93bc983191227814570"
+    url "https://github.com/vulnlog/vulnlog/releases/download/v0.16.0/vulnlog-macos-aarch64.zip"
+    sha256 "682f926e8260fe8fe86ac35e144ac9ff1d89b5dd6b2c6ddeb3c5ee3325aee55d"
   else
-    url "https://github.com/vulnlog/vulnlog/releases/download/v0.15.1/vulnlog-0.15.1.zip"
-    sha256 "685219f11949bf16c3f9c0a07ce3daef024478022dab8a8be98620130c43cbbb"
+    url "https://github.com/vulnlog/vulnlog/releases/download/v0.16.0/vulnlog-0.16.0.zip"
+    sha256 "ff8ae21a0493266a73f9a4995122b9f686517b1960425a5634e60ce083f871e2"
     depends_on "openjdk@21"
   end
 
